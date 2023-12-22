@@ -126,6 +126,9 @@ impl App {
             // 指定された名前の設定が見つからなかった場合
             bail!(anyhow!("name {} not found", name));
         } else {
+            // export hookを実行するかを判断するためのフラグ
+            // １つでも設定が更新された場合はフラグが立つ
+            let mut change_flag = false;
             // 名前が指定されていないときは全ての設定を走査して、変更があったものをdotfiles配下にコピーする
             let pairs = &mut self.config.pairs;
             for each_pair in pairs {
@@ -151,6 +154,7 @@ impl App {
                     })?;
 
                     each_pair.hash = c_hash;
+                    change_flag = true;
                     println!("\t{} {}", DONE.as_str(), each_pair.name);
                 } else {
                     println!("\t{} {}", SKIPPED.as_str(), each_pair.name);
@@ -162,8 +166,8 @@ impl App {
                 .update_config()
                 .context("failed to update config")?;
 
-            info!("calling hook script...");
-            if self.config.export_hook.file_name().is_some() {
+            if change_flag && self.config.export_hook.file_name().is_some() {
+                info!("calling hook script...");
                 let mut cmd = process::Command::new("sh");
                 cmd.arg("-c");
                 cmd.arg(&self.config.export_hook);
@@ -186,7 +190,8 @@ impl App {
             for each_pair in pairs {
                 if name == each_pair.name {
                     let path_in_dot = each_pair.path_in_dot();
-                    let c_hash = dir_hash(&path_in_dot).context("failed to calculate dir hash")?;
+                    let c_hash =
+                        dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
                     if c_hash != each_pair.hash {
                         match fs::remove_dir_all(&each_pair.place) {
                             Ok(_) => {}
@@ -235,6 +240,7 @@ impl App {
                 }
             }
         } else {
+            let mut change_flag = false;
             for each_pair in pairs {
                 let path_in_dot = each_pair.path_in_dot();
                 let c_hash = dir_hash(&path_in_dot).context("failed to calculate dir hash")?;
@@ -265,6 +271,7 @@ impl App {
                         )
                     })?;
                     each_pair.hash = c_hash;
+                    change_flag = true;
                     println!("\t{} {}", DONE.as_str(), each_pair.name);
                 } else {
                     println!("\t{} {}", SKIPPED.as_str(), each_pair.name);
@@ -274,8 +281,8 @@ impl App {
             self.config
                 .update_config()
                 .context("failed to update config")?;
-            info!("calling hook script...");
-            if self.config.import_hook.file_name().is_some() {
+            if change_flag && self.config.import_hook.file_name().is_some() {
+                info!("calling hook script...");
                 let mut cmd = process::Command::new(&self.config.import_hook);
                 cmd.output().with_context(|| {
                     format!(
