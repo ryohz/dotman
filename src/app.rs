@@ -202,6 +202,12 @@ impl App {
             for each_pair in pairs {
                 if name == each_pair.name {
                     let path_in_dot = each_pair.path_in_dot();
+                    if !is_exists(&each_pair.place)
+                        .context("failed to check if directory exists")?
+                    {
+                        fs::create_dir_all(&each_pair.place)
+                            .context("failed to create directory")?;
+                    }
                     let c_hash =
                         dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
                     if c_hash != each_pair.hash {
@@ -230,7 +236,6 @@ impl App {
                                 each_pair.place.display()
                             )
                         })?;
-                        each_pair.hash = c_hash;
                         self.config
                             .update_config()
                             .context("failed to update config")?;
@@ -259,7 +264,10 @@ impl App {
             let mut change_flag = false;
             for each_pair in pairs {
                 let path_in_dot = each_pair.path_in_dot();
-                let c_hash = dir_hash(&path_in_dot).context("failed to calculate dir hash")?;
+                if !is_exists(&each_pair.place).context("failed to check if directory exists")? {
+                    fs::create_dir_all(&each_pair.place).context("failed to create directory")?;
+                }
+                let c_hash = dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
                 if c_hash != each_pair.hash {
                     match fs::remove_dir_all(&each_pair.place) {
                         Ok(_) => {}
@@ -286,7 +294,6 @@ impl App {
                             each_pair.place.display()
                         )
                     })?;
-                    each_pair.hash = c_hash;
                     change_flag = true;
                     println!("\t{} {}", DONE.as_str(), each_pair.name);
                 } else {
