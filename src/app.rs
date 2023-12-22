@@ -107,7 +107,7 @@ impl App {
                             let mut cmd = process::Command::new("sh");
                             cmd.arg("-c");
                             cmd.arg(&self.config.export_hook);
-                            cmd.spawn().with_context(|| {
+                            cmd.output().with_context(|| {
                                 format!(
                                     "\"export\" hook script {} failed to start",
                                     self.config.export_hook.display()
@@ -167,7 +167,7 @@ impl App {
                 let mut cmd = process::Command::new("sh");
                 cmd.arg("-c");
                 cmd.arg(&self.config.export_hook);
-                cmd.spawn().with_context(|| {
+                cmd.output().with_context(|| {
                     format!(
                         "\"export\" hook script {} failed to start",
                         self.config.export_hook.display()
@@ -219,7 +219,7 @@ impl App {
                             .context("failed to update config")?;
                         if self.config.import_hook.file_name().is_some() {
                             let mut cmd = process::Command::new(&self.config.import_hook);
-                            cmd.spawn().with_context(|| {
+                            cmd.output().with_context(|| {
                                 format!(
                                     "\"import\" hook script {} failed to start",
                                     self.config.import_hook.display()
@@ -277,7 +277,7 @@ impl App {
             info!("calling hook script...");
             if self.config.import_hook.file_name().is_some() {
                 let mut cmd = process::Command::new(&self.config.import_hook);
-                cmd.spawn().with_context(|| {
+                cmd.output().with_context(|| {
                     format!(
                         "\"import\" hook script {} failed to start",
                         self.config.import_hook.display()
