@@ -183,6 +183,16 @@ impl App {
     }
 
     pub fn import_config(&mut self, name: Option<String>) -> Result<()> {
+        if self.config.before_import_hook.file_name().is_some() {
+            info!("calling hook script before import...");
+            let mut cmd = process::Command::new(&self.config.before_import_hook);
+            cmd.output().with_context(|| {
+                format!(
+                    "\"import\" hook script {} failed to start",
+                    self.config.before_import_hook.display()
+                )
+            })?;
+        }
         let pairs = &mut self.config.pairs;
         if let Some(name) = name {
             // 名前が指定されていたら
@@ -222,15 +232,17 @@ impl App {
                         self.config
                             .update_config()
                             .context("failed to update config")?;
-                        if self.config.import_hook.file_name().is_some() {
-                            let mut cmd = process::Command::new(&self.config.import_hook);
+                        if self.config.after_import_hook.file_name().is_some() {
+                            info!("calling hook script after import...");
+                            let mut cmd = process::Command::new(&self.config.after_import_hook);
                             cmd.output().with_context(|| {
                                 format!(
                                     "\"import\" hook script {} failed to start",
-                                    self.config.import_hook.display()
+                                    self.config.after_import_hook.display()
                                 )
                             })?;
                         }
+
                         println!("\t{} {}", DONE.as_str(), name);
                         return Ok(());
                     } else {
@@ -281,13 +293,13 @@ impl App {
             self.config
                 .update_config()
                 .context("failed to update config")?;
-            if change_flag && self.config.import_hook.file_name().is_some() {
-                info!("calling hook script...");
-                let mut cmd = process::Command::new(&self.config.import_hook);
+            if change_flag && self.config.after_import_hook.file_name().is_some() {
+                info!("calling hook script after import...");
+                let mut cmd = process::Command::new(&self.config.after_import_hook);
                 cmd.output().with_context(|| {
                     format!(
                         "\"import\" hook script {} failed to start",
-                        self.config.import_hook.display()
+                        self.config.after_import_hook.display()
                     )
                 })?;
             }

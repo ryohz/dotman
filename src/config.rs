@@ -25,7 +25,8 @@ static CONFIG_FILE: &str = "dotman.toml";
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub pairs: Vec<Pair>,
-    pub import_hook: PathBuf,
+    pub after_import_hook: PathBuf,
+    pub before_import_hook: PathBuf,
     pub export_hook: PathBuf,
 }
 
@@ -41,7 +42,8 @@ impl Config {
         let config_dir = CONFIG_DIR.to_path_buf();
         let config = Self {
             pairs: vec![],
-            import_hook: PathBuf::new(),
+            after_import_hook: PathBuf::new(),
+            before_import_hook: PathBuf::new(),
             export_hook: PathBuf::new(),
         };
         let config_path = config_dir.join(CONFIG_FILE);
