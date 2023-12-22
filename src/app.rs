@@ -30,8 +30,7 @@ impl App {
                     place.display()
                 ));
             }
-            let hash = dir_hash(&place).context("failed to calculate dir hash")?;
-            let new_pair = Pair { name, place, hash };
+            let new_pair = Pair { name, place };
             let path_in_dot = &new_pair.path_in_dot();
             match fs::remove_dir_all(path_in_dot) {
                 Ok(_) => {}
@@ -71,9 +70,9 @@ impl App {
                     // 現在の設定ディレクトリのハッシュ値を計算
                     let c_hash =
                         dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
-                    // each_pair.hashには過去に保存したときの設定ディレクトリのハッシュ値が入っている
-                    // これらを比べて変更の有無を調べる。
-                    if c_hash != each_pair.hash {
+                    let p_hash = dir_hash(&each_pair.path_in_dot())
+                        .context("failed to calculate dir hash")?;
+                    if c_hash != p_hash {
                         // 変更が検知されたら
                         // 設定ディレクトリをdotfiles配下にコピーする処理をする
                         let path_in_dot = each_pair.path_in_dot();
@@ -96,12 +95,6 @@ impl App {
                                 path_in_dot.display()
                             )
                         })?;
-                        // ハッシュ値を更新する
-                        each_pair.hash = c_hash;
-                        // 設定ファイル(dotman)を更新
-                        self.config
-                            .update_config()
-                            .context("failed to update config")?;
 
                         if self.config.export_hook.file_name().is_some() {
                             let mut cmd = process::Command::new("sh");
@@ -133,7 +126,9 @@ impl App {
             let pairs = &mut self.config.pairs;
             for each_pair in pairs {
                 let c_hash = dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
-                if c_hash != each_pair.hash {
+                let p_hash =
+                    dir_hash(&each_pair.path_in_dot()).context("failed to calculate dir hash")?;
+                if c_hash != p_hash {
                     let path_in_dot = each_pair.path_in_dot();
                     match fs::remove_dir_all(&path_in_dot) {
                         Ok(_) => {}
@@ -153,7 +148,6 @@ impl App {
                         )
                     })?;
 
-                    each_pair.hash = c_hash;
                     change_flag = true;
                     println!("\t{} {}", DONE.as_str(), each_pair.name);
                 } else {
@@ -161,10 +155,6 @@ impl App {
                     continue;
                 }
             }
-            // 走査が終わったら、設定ファイル(dotman)を更新
-            self.config
-                .update_config()
-                .context("failed to update config")?;
 
             if change_flag && self.config.export_hook.file_name().is_some() {
                 info!("calling hook script...");
@@ -237,9 +227,6 @@ impl App {
                                 each_pair.place.display()
                             )
                         })?;
-                        self.config
-                            .update_config()
-                            .context("failed to update config")?;
                         if self.config.after_import_hook.file_name().is_some() {
                             info!("calling hook script after import...");
                             let mut cmd = process::Command::new("sh");
@@ -303,9 +290,6 @@ impl App {
                     continue;
                 }
             }
-            self.config
-                .update_config()
-                .context("failed to update config")?;
             if change_flag && self.config.after_import_hook.file_name().is_some() {
                 info!("calling hook script after import...");
                 let mut cmd = process::Command::new("sh");

@@ -34,7 +34,6 @@ pub struct Config {
 pub struct Pair {
     pub name: String,
     pub place: PathBuf,
-    pub hash: u32,
 }
 
 impl Config {
