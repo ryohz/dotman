@@ -107,7 +107,7 @@ impl App {
                             let mut cmd = process::Command::new("sh");
                             cmd.arg("-c");
                             cmd.arg(&self.config.export_hook);
-                            cmd.output().with_context(|| {
+                            cmd.spawn().with_context(|| {
                                 format!(
                                     "\"export\" hook script {} failed to start",
                                     self.config.export_hook.display()
@@ -167,7 +167,7 @@ impl App {
                 let mut cmd = process::Command::new("sh");
                 cmd.arg("-c");
                 cmd.arg(&self.config.export_hook);
-                cmd.output().with_context(|| {
+                cmd.spawn().with_context(|| {
                     format!(
                         "\"export\" hook script {} failed to start",
                         self.config.export_hook.display()
