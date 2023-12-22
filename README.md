@@ -55,7 +55,9 @@ hash = 1364170016
 ```before_import_hook```
 ```shell
 cd /home/user/dotfiles/
-git pull origin main
+git fetch
+git reset --hard origin/main
+git pull origin main --force
 ```
 ```after_import_hook```
 ```shell
