@@ -210,7 +210,8 @@ impl App {
                     }
                     let c_hash =
                         dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
-                    if c_hash != each_pair.hash {
+                    let p_hash = dir_hash(&path_in_dot).context("failed to calculate dir hash")?;
+                    if c_hash != p_hash {
                         match fs::remove_dir_all(&each_pair.place) {
                             Ok(_) => {}
                             Err(e) => match e.kind() {
@@ -268,7 +269,8 @@ impl App {
                     fs::create_dir_all(&each_pair.place).context("failed to create directory")?;
                 }
                 let c_hash = dir_hash(&each_pair.place).context("failed to calculate dir hash")?;
-                if c_hash != each_pair.hash {
+                let p_hash = dir_hash(&path_in_dot).context("failed to calculate dir hash")?;
+                if c_hash != p_hash {
                     match fs::remove_dir_all(&each_pair.place) {
                         Ok(_) => {}
                         Err(e) => match e.kind() {
