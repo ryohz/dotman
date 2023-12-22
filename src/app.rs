@@ -185,7 +185,9 @@ impl App {
     pub fn import_config(&mut self, name: Option<String>) -> Result<()> {
         if self.config.before_import_hook.file_name().is_some() {
             info!("calling hook script before import...");
-            let mut cmd = process::Command::new(&self.config.before_import_hook);
+            let mut cmd = process::Command::new("sh");
+            cmd.arg("-c");
+            cmd.arg(&self.config.before_import_hook);
             cmd.output().with_context(|| {
                 format!(
                     "\"import\" hook script {} failed to start",
@@ -234,7 +236,9 @@ impl App {
                             .context("failed to update config")?;
                         if self.config.after_import_hook.file_name().is_some() {
                             info!("calling hook script after import...");
-                            let mut cmd = process::Command::new(&self.config.after_import_hook);
+                            let mut cmd = process::Command::new("sh");
+                            cmd.arg("-c");
+                            cmd.arg(&self.config.after_import_hook);
                             cmd.output().with_context(|| {
                                 format!(
                                     "\"import\" hook script {} failed to start",
@@ -295,7 +299,9 @@ impl App {
                 .context("failed to update config")?;
             if change_flag && self.config.after_import_hook.file_name().is_some() {
                 info!("calling hook script after import...");
-                let mut cmd = process::Command::new(&self.config.after_import_hook);
+                let mut cmd = process::Command::new("sh");
+                cmd.arg("-c");
+                cmd.arg(&self.config.after_import_hook);
                 cmd.output().with_context(|| {
                     format!(
                         "\"import\" hook script {} failed to start",
